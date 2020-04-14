@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <script type="text/javascript" src="{{url_for('static', filename='js/jquery.js')}}"></script>
+  <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <style>
+    .error {
+      color: red;
+      margin-left: 5px;
+    }
+
+    label.error {
+      display: inline;
+    }
+
+    .ui-dialog-titlebar-close {
+      visibility: hidden;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="alert alert-success" role="alert">
+    <h4 class="alert-heading"></h4>
+    <p>   For each of the following statements, please indicate how true it is for you, using the 7-point likert scale, where 1 means not at all true and 7 means very true.</p>
+    <hr>
+    <b>Amount that you have enarned so far: <span id="bonus"></span></b>. You will earn additional 10 cents after completing this task!
+  </div>
+
+
+
+  <div id="dialog" title="Basic dialog">
+    <h4 style="color:green;">Congratulations on completing the training!</h4>
+    <p>In this short survey, we just want to know how much you enjoyed completing the training with our chatbot. </p>
+    <p> You will be awarded 10 cents in answering this survey! </p>
+
+  </div>
+  <!-- <button type="button" class="btn btn-primary btn-lg btn-block">Please indicate how confident you are in your ability to do each of the following tasks effectively? 0 means 'no confidence' while 9 means 'complete confidence'</button>
+  <div class="text-center">
+    <button type="button" class="btn btn-danger">The button (Proceed next) will be enabled once you select all options</button>
+  </div> -->
+
+  <!-- <button type="button" class="btn btn-primary btn-lg btn-block">Please indicate how confident you are in your ability to do each of the following tasks effectively? 0 means 'no confidence' while 9 means 'complete confidence'</button> -->
+  <!-- <h4>Please indicate how confident you are in your ability to do each of the following tasks effectively? 0 means 'no confidence' while 9 means 'complete confidence'</h4> -->
+
+  <table class="table table-dark">
+    <thead class="thead-dark">
+      <tr>
+        <th scope="col">Items</th>
+        <th scope="col">1</th>
+        <th scope="col">2</th>
+        <th scope="col">3</th>
+        <th scope="col">4</th>
+        <th scope="col">5</th>
+        <th scope="col">6</th>
+        <th scope="col">7</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td scope="row">I enjoyed doing this activity very much</td>
+        <td><input type="radio" value="1" name="enjoy" /></td>
+        <td><input type="radio" value="2" name="enjoy" /></td>
+        <td><input type="radio" value="3" name="enjoy" /></td>
+        <td><input type="radio" value="4" name="enjoy" /></td>
+        <td><input type="radio" value="5" name="enjoy" /></td>
+        <td><input type="radio" value="6" name="enjoy" /></td>
+        <td><input type="radio" value="7" name="enjoy" /></td>
+      </tr>
+      <tr>
+        <td scope="row">This activity was fun to do.</td>
+        <td><input type="radio" value="1" name="fun" /></td>
+        <td><input type="radio" value="2" name="fun" /></td>
+        <td><input type="radio" value="3" name="fun" /></td>
+        <td><input type="radio" value="4" name="fun" /></td>
+        <td><input type="radio" value="5" name="fun" /></td>
+        <td><input type="radio" value="6" name="fun" /></td>
+        <td><input type="radio" value="7" name="fun" /></td>
+      </tr>
+      <tr>
+        <td scope="row">I thought this was a boring activity.</td>
+        <td><input type="radio" value="1" name="boring" /></td>
+        <td><input type="radio" value="2" name="boring" /></td>
+        <td><input type="radio" value="3" name="boring" /></td>
+        <td><input type="radio" value="4" name="boring" /></td>
+        <td><input type="radio" value="5" name="boring" /></td>
+        <td><input type="radio" value="6" name="boring" /></td>
+        <td><input type="radio" value="7" name="boring" /></td>
+      </tr>
+      <tr>
+        <td scope="row">This activity did not hold my attention at all.</td>
+        <td><input type="radio" value="1" name="attention" /></td>
+        <td><input type="radio" value="2" name="attention" /></td>
+        <td><input type="radio" value="3" name="attention" /></td>
+        <td><input type="radio" value="4" name="attention" /></td>
+        <td><input type="radio" value="5" name="attention" /></td>
+        <td><input type="radio" value="6" name="attention" /></td>
+        <td><input type="radio" value="7" name="attention" /></td>
+      </tr>
+      <tr>
+        <td scope="row">I thought this activity was quite enjoyable.</td>
+        <td><input type="radio" value="1" name="enjoyable" /></td>
+        <td><input type="radio" value="2" name="enjoyable" /></td>
+        <td><input type="radio" value="3" name="enjoyable" /></td>
+        <td><input type="radio" value="4" name="enjoyable" /></td>
+        <td><input type="radio" value="5" name="enjoyable" /></td>
+        <td><input type="radio" value="6" name="enjoyable" /></td>
+        <td><input type="radio" value="7" name="enjoyable" /></td>
+      </tr>
+      <tr>
+        <td scope="row">While I was doing this activity, I was thinking about how much I enjoyed it.</td>
+        <td><input type="radio" value="1" name="thinking_enjoyed" /></td>
+        <td><input type="radio" value="2" name="thinking_enjoyed" /></td>
+        <td><input type="radio" value="3" name="thinking_enjoyed" /></td>
+        <td><input type="radio" value="4" name="thinking_enjoyed" /></td>
+        <td><input type="radio" value="5" name="thinking_enjoyed" /></td>
+        <td><input type="radio" value="6" name="thinking_enjoyed" /></td>
+        <td><input type="radio" value="7" name="thinking_enjoyed" /></td>
+      </tr>
+      <tr>
+        <td scope="row">I did not feel nervous at all while doing this.</td>
+        <td><input type="radio" value="1" name="nervous" /></td>
+        <td><input type="radio" value="2" name="nervous" /></td>
+        <td><input type="radio" value="3" name="nervous" /></td>
+        <td><input type="radio" value="4" name="nervous" /></td>
+        <td><input type="radio" value="5" name="nervous" /></td>
+        <td><input type="radio" value="6" name="nervous" /></td>
+        <td><input type="radio" value="7" name="nervous" /></td>
+      </tr>
+      <tr>
+        <td scope="row">I felt very tense while doing this activity.</td>
+        <td><input type="radio" value="1" name="tense" /></td>
+        <td><input type="radio" value="2" name="tense" /></td>
+        <td><input type="radio" value="3" name="tense" /></td>
+        <td><input type="radio" value="4" name="tense" /></td>
+        <td><input type="radio" value="5" name="tense" /></td>
+        <td><input type="radio" value="6" name="tense" /></td>
+        <td><input type="radio" value="7" name="tense" /></td>
+      </tr>
+      <tr>
+        <td scope="row">I was very relaxed in doing these.</td>
+        <td><input type="radio" value="1" name="relaxed" /></td>
+        <td><input type="radio" value="2" name="relaxed" /></td>
+        <td><input type="radio" value="3" name="relaxed" /></td>
+        <td><input type="radio" value="4" name="relaxed" /></td>
+        <td><input type="radio" value="5" name="relaxed" /></td>
+        <td><input type="radio" value="6" name="relaxed" /></td>
+        <td><input type="radio" value="7" name="relaxed" /></td>
+      </tr>
+      <tr>
+        <td scope="row">I was anxious while working on this task.</td>
+        <td><input type="radio" value="1" name="anxious" /></td>
+        <td><input type="radio" value="2" name="anxious" /></td>
+        <td><input type="radio" value="3" name="anxious" /></td>
+        <td><input type="radio" value="4" name="anxious" /></td>
+        <td><input type="radio" value="5" name="anxious" /></td>
+        <td><input type="radio" value="6" name="anxious" /></td>
+        <td><input type="radio" value="7" name="anxious" /></td>
+      </tr>
+
+      <tr>
+        <td scope="row">I felt pressured while doing these.</td>
+        <td><input type="radio" value="1" name="pressured" /></td>
+        <td><input type="radio" value="2" name="pressured" /></td>
+        <td><input type="radio" value="3" name="pressured" /></td>
+        <td><input type="radio" value="4" name="pressured" /></td>
+        <td><input type="radio" value="5" name="pressured" /></td>
+        <td><input type="radio" value="6" name="pressured" /></td>
+        <td><input type="radio" value="7" name="pressured" /></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="text-center">
+    <label for="message"></label>
+    <button type="button" class="btn btn-warning" id='nextbtn'>Proceed Next</button>
+  </div>
+  <script>
+  function gup(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS);
+    var results = regex.exec(window.location.href);
+    if (results == null)
+      return "";
+    else
+      return unescape(results[1]);
+  }
+
+  $(document).ready(function() {
+     $("#bonus").text(parseFloat(gup('bonus')).toFixed(2));
+  });
+    $(function() {
+      $("#dialog").dialog({
+        modal: true,
+        width: 500,
+        resizeable: false,
+        draggable: false,
+
+        buttons: {
+          OK: function() {
+            $(this).dialog("close");
+          }
+        },
+        title: "Instructions"
+      });
+    });
+    var enjoy;
+    var fun;
+    var boring;
+    var attention;
+    var enjoyable;
+    var thinking_enjoyed;
+    var nervous;
+    var tense;
+    var relaxed;
+    var anxious;
+    var pressured;
+
+
+    $('input:radio').click(function() {
+      enjoy = $('input:radio[name=enjoy]:checked').val();
+      fun = $('input:radio[name=fun]:checked').val();
+      boring = $('input:radio[name=boring]:checked').val();
+      attention = $('input:radio[name=attention]:checked').val();
+      enjoyable = $('input:radio[name=enjoyable]:checked').val();
+      thinking_enjoyed = $('input:radio[name=thinking_enjoyed]:checked').val();
+      nervous = $('input:radio[name=nervous]:checked').val();
+      tense = $('input:radio[name=tense]:checked').val();
+      relaxed = $('input:radio[name=relaxed]:checked').val();
+      anxious = $('input:radio[name=anxious]:checked').val();
+      pressured = $('input:radio[name=pressured]:checked').val();
+
+    });
+
+    //http://jsfiddle.net/b3fkguy9/2/
+    //this function will keep the button diabled unless all options are chosen.
+    $(function() {
+      var button = $('#nextbtn').prop('disabled', true);
+      var radios = $('input[type="radio"]');
+      var arr = $.map(radios, function(el) {
+        return el.name;
+      });
+
+      var groups = $.grep(arr, function(v, k) {
+        return $.inArray(v, arr) === k;
+      }).length;
+
+      radios.on('change', function() {
+        button.prop('disabled', radios.filter(':checked').length < groups);
+      });
+    });
+    //////////////////////////////////////////////////////////////////////////////
+
+    $('#nextbtn').click(function() {
+      enjoy = $('input:radio[name=enjoy]:checked').val();
+      fun = $('input:radio[name=fun]:checked').val();
+      boring = $('input:radio[name=boring]:checked').val();
+      attention = $('input:radio[name=attention]:checked').val();
+      enjoyable = $('input:radio[name=enjoyable]:checked').val();
+      thinking_enjoyed = $('input:radio[name=thinking_enjoyed]:checked').val();
+      nervous = $('input:radio[name=nervous]:checked').val();
+      tense = $('input:radio[name=tense]:checked').val();
+      relaxed = $('input:radio[name=relaxed]:checked').val();
+      anxious = $('input:radio[name=anxious]:checked').val();
+      pressured = $('input:radio[name=pressured]:checked').val();
+      $.ajax({
+        type: "POST",
+        url: "/enjoyment",
+        data: JSON.stringify({
+          "enjoy": enjoy,
+          "fun": fun,
+          "boring": boring,
+          "attention": attention,
+          "enjoyable": enjoyable,
+          "thinking_enjoyed": thinking_enjoyed,
+          "nervous": nervous,
+          "tense": tense,
+          'relaxed': relaxed,
+          "anxious": anxious,
+          "pressured": pressured,
+          "workerId": gup('workerId')
+        }),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          // alert('done!');
+        }
+      });
+      var qs = {
+        'workerId': gup('workerId'),
+        'bonus':parseFloat(gup('bonus')) + 0.10
+      };
+
+      window.location.replace("http://127.0.0.1:5000/post_self_efficacy"+"?"+$.param(qs));
+    });
+  </script>
+  <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+
+
+
+</body>
+
+</html>

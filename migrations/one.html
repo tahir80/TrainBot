@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Web</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/owl.carousel.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+
+    <style>
+    figcaption {
+      text-align: center;
+    }
+    </style>
+</head>
+<body >
+  <div id="headerOfAllPages">
+      <h1>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Eindhoven_University_of_Technology_logo_new.png" height="100"/>
+          Creastimate: Predicting the Creativity of Novel IoT Products and Services
+      </h1>
+  </div>
+
+  <div>
+      <p>Creastimate is a service developed to assist designers and innovators to think, structure and write scenarios of novel IoT products and services. Creastimate is strustured in three steps: 1) select input devices to include in your scenario; 2) select output devices to include in your scenario; 3) write the scenario. After writing the scenario Creastimate uses supervised machine learning techniques to predict whether it will be perceived as creative.</p>
+  </div>
+
+    <div class="container mt-5">
+        <div class="row first-row">
+            <div class="col-md-9">
+                <h2 class="text-center">Select Input Devices</h2>
+                <p class="text-center sel-p">In the next step, you will select output devices</p>
+            </div>
+
+            <div class="col-md-3">
+                <div class="progress mt-2">
+                    <div class="progress-bar" style="width: 40%;">40%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="owl-carousel owl-theme product-carousel mt-5">
+            <div class="item">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Date and Time: This IFTTT based service can trigger an output device on specific date and time (e.g. everyday at 5:00 PM).">
+                        <img id="datetime" src="{{ url_for('static', filename='images/icons/input/date_time_mono.png') }}" data-swap= "{{ url_for('static', filename='images/icons/input/date_time.png') }}" class="img-fluid" alt="datetime">
+                        <figcaption>Date/time service</figcaption>
+
+                            <!-- <img class="img-fluid" alt="apple" src="assets/images/apple.jpg"> -->
+                        </a>
+                    </div>
+
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Door/Window Sensor: It can trigger an output device(s), based on detection of closing and opening of any door/window or garage door.">
+                            <img id = "door" src="{{ url_for('static', filename='images/icons/input/door_mono.png') }}" data-swap="{{ url_for('static', filename='images/icons/input/door.png') }}" class="img-fluid" alt="door">
+                            <figcaption>Door/window sensor</figcaption>
+                        </a>
+
+                    </div>
+
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Doorbell Sensor:  It can trigger an output device(s), when it detects someone at your front door (it has built-in camera, microphone and motion sensing).">
+                            <img id = "doorbell" src="{{ url_for('static', filename='images/icons/input/doorbell_mono.png') }}" data-swap="{{ url_for('static', filename='images/icons/input/doorbell.png') }}" class="img-fluid" alt="doobell">
+                            <figcaption>Doorbell Sensor</figcaption>
+                        </a>
+
+                    </div>
+
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Light/Brightness Sensor: It can trigger an output device(s), based on detection of specific brightness level or light intensity.">
+                            <img id = "light" src="{{ url_for('static', filename='images/icons/input/light_mono.png') }}" data-swap="{{ url_for('static', filename='images/icons/input/light.png') }}" class="img-fluid" alt="light">
+                            <figcaption>Light/Brightness Sensor</figcaption>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Location: It can trigger an output device(s), when you enter or leave an area with your Android or iOS device.">
+                            <img id = "location" src="{{ url_for('static', filename='images/icons/input/location_mono.png') }}" data-swap = "{{ url_for('static', filename='images/icons/input/location.png') }}" class="img-fluid" alt="location">
+                            <figcaption>location service</figcaption>
+                        </a>
+                    </div>
+
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Motion Sensor: It can trigger an output device(s), based on detection of new motion.">
+                            <img id = "motion" src="{{ url_for('static', filename='images/icons/input/motion_sensor_mono.png') }}" data-swap = "{{ url_for('static', filename='images/icons/input/motion_sensor.png') }}" class="img-fluid" alt="motion">
+                            <figcaption>Motion Sensor</figcaption>
+                        </a>
+
+                    </div>
+
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Smoke sensor: It can trigger an output device(s), based on detected smoke and CO inside a house.">
+                            <img id = "smoke" src="{{ url_for('static', filename='images/icons/input/smoke-detector_mono.png') }}" data-swap="{{ url_for('static', filename='images/icons/input/smoke-detector.png') }}" class="img-fluid" alt="smoke">
+                            <figcaption>Smoke sensor</figcaption>
+                        </a>
+
+                    </div>
+
+                    <div class="col-md-3">
+                        <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Temperature Sensor:  It can trigger an output device(s), based on changes in the indoor temperature measurements.">
+                            <img id = "temperature" src="{{ url_for('static', filename='images/icons/input/temperature_sensor_mono.png') }}" data-swap="{{ url_for('static', filename='images/icons/input/temperature_sensor.png') }}" class="img-fluid" alt="temperature">
+                            <figcaption>Temperature Sensor</figcaption>
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="item">
+
+                <div class="row">
+                  <div class="col-md-3">
+                      <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Water Sensor: It can trigger an output device(s), based on detection of water leakage.">
+                          <img id = "water" src="{{ url_for('static', filename='images/icons/input/water_mono.png') }}" data-swap="{{ url_for('static', filename='images/icons/input/water.png') }}" class="img-fluid" alt="water">
+                          <figcaption>Water Sensor</figcaption>
+                      </a>
+
+                  </div>
+
+                  <div class="col-md-3">
+                      <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Weather Station:  It can trigger an output device(s), based on specific changes in outdoor environment like temperature, humidity, air pressure, rainfall measurements, CO, Wind Speed and Noise level.">
+                          <img id = "weather" src="{{ url_for('static', filename='images/icons/input/weather_mono.png') }}" data-swap="{{ url_for('static', filename='images/icons/input/weather.png') }}" class="img-fluid" alt="weather">
+                          <figcaption>Weather Station</figcaption>
+                      </a>
+
+                  </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <a href="javascript:void(0)" class="btn btn-info mx-auto d-block custom-btn mb-5  mt-5" id="next">Next</a>
+
+    </div>
+
+
+    <script type="text/javascript" src="{{url_for('static', filename='js/popper.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/jquery-3.2.1.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/owl.carousel.min.js')}}"></script>
+
+
+    <script>
+    var input_devices = {};
+    function gup(name) {
+      name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+      var regexS = "[\\?&]" + name + "=([^&#]*)";
+      var regex = new RegExp(regexS);
+      var results = regex.exec(window.location.href);
+      if (results == null)
+        return "";
+      else
+        return unescape(results[1]);
+    }
+
+  //_this.attr('src', swap).attr("data-swap",current);
+if(gup('datetime') === 'datetime') {
+    var image = $("#datetime").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('door') === 'door') {
+    var image = $("#door").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('doorbell') === 'doorbell') {
+    var image = $("#doorbell").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('light') === 'light') {
+    var image = $("#light").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('location') === 'location') {
+    var image = $("#location").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('motion') === 'motion') {
+    var image = $("#motion").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('smoke') === 'smoke') {
+    var image = $("#smoke").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('temperature') === 'temperature') {
+    var image = $("#temperature").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('water') === 'water') {
+    var image = $("#water").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+if(gup('weather') === 'weather') {
+    var image = $("#weather").on("load", function() {
+       });
+      var current = image.attr('src');
+      var swap = image.attr("data-swap");
+    image.attr('src', swap).attr("data-swap",current);
+    input_devices[image.attr('id')] = image.attr('id');
+}
+
+
+
+
+
+
+
+        $('.owl-carousel').owlCarousel({
+            loop: true,
+            margin: 10,
+            nav: true,
+            autoplay: false,
+            navText: ["<i class='fa fa-arrow-left'></i>", "<i class='fa fa-arrow-right'></i>"],
+            responsive: {
+                0: {
+                    items: 1
+                },
+                600: {
+                    items: 1
+                },
+                1000: {
+                    items: 1
+                }
+            }
+        });
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+
+
+var url = window.location.origin;
+ $('#doorbell, #datetime, #door, #light, #location, #motion, #smoke, #temperature, #water, #weather').click(function(){
+   var _this = $(this);
+   var current = _this.attr("src");
+   console.log('current: '+current);
+   var swap = _this.attr("data-swap");
+   console.log('swsap: '+swap);
+
+  var res = current.split("/");
+  var res1 = res[res.length - 1].split(".")[0].split("_")
+  if(res1.includes("mono")) {
+    input_devices[_this.attr('id')] = _this.attr('id');
+  } else {
+    if(input_devices[_this.attr('id')] === _this.attr('id'))
+    delete input_devices[$(this).attr('id')];
+   }
+  _this.attr('src', swap).attr("data-swap",current);
+
+    });
+$("#next").click(function(){
+  window.location.replace(url +'/output?'+$.param(input_devices));
+});
+
+
+
+
+
+  </script>
+
+
+</body>
+</html>

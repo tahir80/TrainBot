@@ -1,0 +1,211 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+    {# head #}
+    {% block head %}
+        <head>
+            <title> Perry CC </title>
+            <meta charset="utf-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale = 1.0">
+
+            <title>Training</title>
+
+            <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+            <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
+
+            <!-- JS for SocketIO -->
+            <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+            <!-- JQuery -->
+            <script type="text/javascript" src="{{url_for('static', filename='js/jquery.js')}}"></script>
+
+            <script type="text/javascript" src="{{url_for('static', filename='js/Bubbles.js')}}"></script>
+
+            <!-- Bootstrap CSS -->
+            <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+
+            <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+           <!-- <link rel="stylesheet" href="/resources/demos/style.css"> -->
+          <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+            <script
+                   src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+                   integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+                   crossorigin="anonymous"></script>
+            <!--  Google fonts-->
+            <link href="https://fonts.googleapis.com/css?family=Sansita" rel="stylesheet" >
+
+            <!-- CSS for chat box -->
+
+            <!-- General CSS -->
+            <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}" >
+
+            <link rel="stylesheet" href="{{url_for('static', filename='css/train_bot/input.css')}}">
+            <link rel="stylesheet" href="{{url_for('static', filename='css/train_bot/reply.css')}}">
+            <link rel="stylesheet" href="{{url_for('static', filename='css/train_bot/says.css')}}">
+            <link rel="stylesheet" href="{{url_for('static', filename='css/train_bot/setup.css')}}">
+            <link rel="stylesheet" href="{{url_for('static', filename='css/train_bot/typing.css')}}">
+            <link rel="stylesheet" href="{{url_for('static', filename='css/train_bot/input.css')}}">
+
+           <style>
+            /* body {
+              background: #dcdde0;
+            } */
+
+           .fixed { position: fixed; width: 25%; }
+
+            .bubble-container {
+              height: 100vh;
+            }
+
+            .bubble-container .input-wrap textarea{
+              margin: 0;
+              width: calc(100% - 30px);
+            }
+
+            textarea:focus, input:focus {
+             outline: none;
+            border: 3px solid red;
+             }
+
+             .ui-dialog-titlebar-close {
+              visibility: hidden;
+          }
+
+            /* textarea#styled {
+            width: 600px;
+            height: 120px;
+            border: 3px solid #cccccc;
+            padding: 5px;
+            font-family: Tahoma, sans-serif;
+            background-image: url(bg.gif);
+            background-position: bottom right;
+            background-repeat: no-repeat;
+          } */
+
+            .isa_info,
+            .isa_success,
+            .isa_warning,
+            .isa_error {
+              margin: 10px 0px;
+              padding: 12px;
+
+            }
+
+            .isa_info {
+              color: #00529B;
+              background-color: #BDE5F8;
+            }
+
+            .isa_success {
+              color: #4F8A10;
+              background-color: #DFF2BF;
+            }
+
+            .isa_warning {
+              color: #9F6000;
+              background-color: #FEEFB3;
+            }
+
+            .isa_error {
+              color: #D8000C;
+              background-color: #FFD2D2;
+            }
+
+            .isa_info i,
+            .isa_success i,
+            .isa_warning i,
+            .isa_error i {
+              margin: 10px 22px;
+              font-size: 2em;
+              vertical-align: middle;
+            }
+
+         .sticky { position: fixed; top: 0; width: 100%; }
+         .sticky + .content { padding-top: 102px; }
+
+         .header {background: #555; color: #f1f1f1; z-index: 1;}
+         .content { padding: 0px; }
+          </style>
+
+        </head>
+    {% endblock head %}
+
+    {# body #}
+    {% block body %}
+    <body>
+
+      <div id="dialog" title="Basic dialog">
+              <h4 style="color:green;">Please read these instructions carefully before starting</h4>
+              <!-- <p>This is the main task and you need to pay special attention to it. </p> -->
+              <p>In this task, you will be trained on how best to advice a person who is stressed out with the help of a chatbot.</p>
+              <p>The chatbot will also assess your learned skills with help of short quizzes during the training. If you don't know the answer, you can request the chatbot for either showing you the instructions again for a specific topic or you can request a retake of a quiz.  </p>
+              <p>In addition to quizzes, you will be asked some open-ended questions. </p>
+              <p>Please don’t think too much for answering open-ended questions. </p>
+              <p>You can see your accumulated bonus and progress on the dashboard. </p>
+              <p>You will be awarded 10 cents for answering each open-ended question and a quiz.</p>
+              <p>The estimated time for this task is roughly 15 minutes. </p>
+
+
+          </div>
+    <div class="wrapper">
+        {# navigation bar #}
+        <!-- {% block navbar %}
+            <nav class="navbar navbar-inverse">
+                <div class="container">
+                    <a class="navbar navbar-text" href="#home_page">
+                        <h3 class="title"> Perry Crowd Control </h3>
+                    </a>
+                </div>
+            </nav>
+        {% endblock navbar %} -->
+
+        {# flash messaging #}
+        {% for message in get_flashed_messages() %}
+                <div class=" container alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert"></button>
+                    {{ message }}
+                </div>
+        {% endfor %}
+
+        {# empty block for custom content #}
+        {% block content %}
+
+        {% endblock content %}
+
+        {# footer #}
+        {% block footer %}
+            <footer>
+                <div class="container ftr">
+                    <hr>
+                    <p class="text-center small">Perry Crowd Control &copy;  |  2018</p>
+                </div>
+            </footer>
+        {% endblock footer %}
+
+    </div>
+
+    <!-- Bootstrap javascript -->
+    <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+
+    <script type="text/javascript" src="{{url_for('static', filename='js/timer0.js')}}"></script>
+
+    <!--  To use Watson Speech to Text API-->
+    <!-- <script src="{{url_for('static', filename='js/watson-speech.min.js')}}"></script> -->
+
+    <!-- window.fetch pollyfill for IE/Edge & Older Chrome/FireFox -->
+    <!-- <script src="{{url_for('static', filename='js/fetch.js')}}"></script> -->
+
+
+    <!-- <script type="text/javascript" src="{{url_for('static', filename='js/timer.js')}}"></script> -->
+
+    <!--  For Rendering interface -->
+    <!-- <script type="text/javascript" src="{{url_for('static', filename='js/chat-box.js')}}"></script> -->
+
+
+
+    </body>
+    {% endblock body %}
+</html>

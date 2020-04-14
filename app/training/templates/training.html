@@ -1,0 +1,1860 @@
+{% extends 'layout_training.html' %}{% block content %}
+
+
+<div class="header" id="myHeader">
+  <div class="container">
+    <!-- <h2>Score Board</h2> -->
+    <table class="table borderless">
+      <!-- <thead>
+      <tr>
+        <th>Your Total Bonus</th>
+        <th>Time</th>
+        <th>Note</th>
+      </tr>
+    </thead> -->
+      <tbody>
+        <tr>
+          <td>
+            <h4>Your Bonus: <span id="bonus" style="color: #ffffff">0.20</span>$</h4></td>
+          <td>
+            <h4>Time Elapsed: <span id="timer" style="color: #ff00ff"></span></h4></td>
+          <td>
+            <h5><span id="timer" style="color: #00ff00">Note: Please refresh the page, if you encounter any problem. The conversation is resumed from the point where the disruption happens.</span></h5></td>
+        </tr>
+
+        <tr>
+          <td colspan="3">
+
+            <div class="progress">
+              <div id="progress" class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:1%">
+                2%
+              </div>
+            </div>
+
+            <!-- <button type="button" name="button" onclick="skip();">Skip</button> -->
+
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="content">
+
+  <div id="chat">
+  </div>
+</div>
+
+
+<script>
+  var training_data = [];
+  var stage = '';
+  var socket = '';
+  var selectedText = '';
+  var _bonus = 0.20;
+  var workerId = '';
+  var progressBarWidth = "2%";
+
+  var chatWindow = new Bubbles(document.getElementById("chat"), "chatWindow", {
+
+    // the one that we care about is inputCallbackFn()
+    // this function returns an object with some data that we can process from user input
+    // and understand the context of it
+    //
+    // this is an example function that matches the text user typed to one of the answer bubbles
+    // this function does no natural language processing
+    // this is where you may want to connect this script to NLC backend.
+    inputCallbackFn: function(o) {
+
+    }
+  }) // done setting up chat-bubble
+  var convo = {
+
+    x: '',
+    y: '',
+    // "ice" (as in "breaking the ice") is a required conversation object
+    // that maps the first thing the bot will say to the user
+    ice: {
+      // "says" defines an array of sequential bubbles
+      // that the bot will produce
+      says: [
+        "Hello!",
+        "I am a TrainBot",
+        "I will guide you step by step how to help a person seeking life coaching by chatting online with him or her.",
+        // "before starting training, please enter your Prolific ID (24 alphanumeric characters)"
+      ],
+      // "reply" is an array of possible options the user can pick from
+      // as a reply
+      reply: [
+
+        {
+          question: "click me to proceed next 👇",
+          answer: "intro" // key for the next conversation objec
+        }
+      ]
+    }, // end required "ice" conversation object
+
+
+    intro: {
+      // "says" defines an array of sequential bubbles
+      // that the bot will produce
+      says: [
+        // "Thank you for providing your Prolific ID!",
+        "This short training (will take approximately 10 minutes) is structured in four steps, titled: ",
+        "1) Greet and open the conversation;",
+        "2) Listen carefully; ",
+        "3) Ask open questions; ",
+        "4) Close the conversation",
+        "Are you ready for this? then click on the grey bubbles 👇"
+      ],
+      // "reply" is an array of possible options the user can pick from
+      // as a reply
+      reply: [
+
+        {
+          question: "Yes", // label for the reply option
+          answer: "try_out_user_greeting" // key for the next conversation objec
+        },
+        {
+          question: "Sure!", // label for the reply option
+          answer: "try_out_user_greeting" // key for an "escape valve"; we refer to this whenever a reply signals the end of the convo
+        }
+      ]
+    }, // end required "ice" conversation object
+
+
+    // side note
+    "try_out_user_greeting": {
+      says: [
+        "What do you think should be the first step to talk with a person seeking life coaching?"
+      ],
+      reply: [{
+          question: "click me to type in the text area below 👇",
+          answer: "tryOutUserGreeting" // key for another side note; in this instance, we're using it to contextualize the Q&A we're heading into
+        },
+
+      ]
+    },
+
+    // side note
+    greeting: {
+      says: [
+        "Thank you for your input. Let's expand on this topic a bit",
+        "Great! Let’s start with the first and very basic step.",
+        "You first need to ask the user about his/her name",
+        "and then introduce yourself as a life coach.",
+        "While introducing yourself, it’s better to call user with his/her name. For instance, you could say: ",
+        "<i> &quot;Hi (user-name), I’m Martin, your life coach. What brings you to life coaching today.</i>&quot;",
+        "Do you want to see some more good examples?"
+      ],
+      reply: [{
+          question: "Yes",
+          answer: "yes_greeting_examples" // key for another side note; in this instance, we're using it to contextualize the Q&A we're heading into
+        },
+        {
+          question: "No thanks, I understood",
+          answer: "no_greeting_examples" // no further sidetrack required, returning to the main conversation tree
+        }
+      ]
+    },
+
+    // another side note
+    "greeting_examples": {
+      says: [
+        "<i> &quot;Hi (User-name). I know you had some things you wanted to talk about, so what brings you in today?</i> &quot;",
+        "<i> &quot;Hi (user name), what's brought you here? What's been the problem?<i> &quot;"
+      ],
+      reply: [{
+        question: "OK, let me move forward",
+        answer: "greeting_congrat"
+      }]
+    },
+
+    // main conversation trunk
+    "greeting_congrat": {
+      says: [
+        "Congratulations! 👏👏👏",
+        "Now you have learned how to open up the discussion with the stressed person.",
+        "In a scale from 1 to 5 where 1 is a friend and 5 is a therapist, where do you think that a coach lies?"
+      ],
+      reply: [{
+          question: "1",
+          answer: "greeting_golden_tip1" // here both replies send people onto the same next chapter
+        },
+        {
+          question: "2",
+          answer: "greeting_golden_tip1" // here both replies send people onto the same next chapter
+        },
+        {
+          question: "3",
+          answer: "greeting_golden_tip1" // here both replies send people onto the same next chapter
+        },
+        {
+          question: "4",
+          answer: "greeting_golden_tip1" // here both replies send people onto the same next chapter
+        },
+        {
+          question: "5",
+          answer: "greeting_golden_tip1" // here both replies send people onto the same next chapter
+        }
+      ]
+    },
+    "greeting_golden_tip": {
+      says: [
+        "Thank you for your input",
+        "Here's what the psychologists say 👇",
+        "A coach isn’t a therapist or a counselor and a coach isn’t a friend either, but <mark> a coach should be something in between a therapist and a friend </mark>, like a 'life guide' or 'mentor' for the user."
+      ],
+      reply: [{
+        question: "OK, let me move forward",
+        answer: "greeting_quiz"
+      }]
+    },
+
+    // this chapter is skipped
+    "greeting_quiz": {
+      // we skip this in this example to show you can do that; use it if you want.
+      says: [
+        "Now its time for an easy quiz! 💪",
+        "Which of the following are important steps to open a conversation with a person seeking life coaching?"
+      ],
+      reply: [{
+          question: "<b>A.</b> Say Hello",
+          answer: "greeting_wrong1"
+        },
+        {
+          question: "<b>B.</b> ask name",
+          answer: "greeting_wrong1"
+        },
+        {
+          question: "<b>C.</b> introduce yourself",
+          answer: "greeting_wrong1"
+        },
+        {
+          question: "<b>D.</b> both B & C",
+          answer: "greeting_correct1"
+        }
+      ]
+    },
+
+    // continue with main conversation trunk
+    "greeting_correct": {
+      says: [
+        "Well done! 👏"
+      ],
+      reply: [{
+        question: "Take me to the next step",
+        answer: "ref_listening"
+      }]
+    },
+    "greeting_wrong": {
+      says: [
+        "😟",
+        "It is not the right option.",
+        "Do you want to read instructions again?"
+      ],
+      reply: [{
+          question: "Yes",
+          answer: "greeting"
+        },
+        {
+          question: "No, show me the quiz again!",
+          answer: "greeting_quiz" // function name that will be executed
+        }
+
+        // {
+        //   question: "No, take me to the next step anyway",
+        //   answer: "ref_listening" // function name that will be executed
+        // }
+      ]
+    },
+
+    "ref_listening": {
+      says: [
+        "Great! Now the next step is that you need to reflect back and validate what the user is saying.",
+        "This is called reflective listening and it is important counseling technique that helps to establish a rapport between a coach and the client.",
+        "Before showing you more examples, how would you respond to this user query?: ",
+        "<i>User: 'This has been a very rough week for me.'</i>",
+      ],
+      reply: [{
+        question: "click me to type in the text area below 👇",
+        answer: "ref_listening_start"
+      }]
+    },
+
+    "ref_listening_next": {
+      says: [
+        "Here is my answer:",
+        "<i>Coach: 'It sounds like your stress has gotten to the point that it’s starting to affect your life. What in particular are you stressed about?</i>",
+        "I hope your answer would be better than mine 😉",
+        "Did you understand reflective listening?"
+      ],
+      reply: [{
+          question: "yes",
+          answer: "ref_listening_templates_consent1"
+        },
+
+        {
+          question: "No",
+          answer: "ref_listening_elaborate_it_more1"
+        },
+
+      ]
+    },
+
+    "ref_listening_elaborate_it_more": {
+      says: [
+        "Reflective listening refers to reflecting back what the user has said. ",
+        "Reflection can be simple and intuitive – such as reflecting back the main content of a statement. ",
+        "It acknowledges and validates the patient’s voice and shows you are listening.",
+        "Example: ",
+        "<i>User: 'I feel insecure all the time. I’ve felt that way my whole life.'</i>",
+        "<i>Coach: 'It sounds like you feel you’ve lacked confidence, like that constant feeling of not being good enough'</i>"
+      ],
+      reply: [{
+          question: "OK, I got it, let me move forward",
+          answer: "ref_listening_templates_consent"
+        },
+
+      ]
+    },
+
+    "ref_listening_templates_consent": {
+      says: [
+        "I have great templates that you can use for reflective listening. Click templates below to see some 👇"
+      ],
+      reply: [{
+          question: "show templates",
+          answer: "ref_listening_templates"
+        },
+
+      ]
+    },
+
+
+    "ref_listening_templates": {
+      says: [
+        "Here they are:",
+        "<i>'If I heard you correctly, this is what I think you are saying: ___________.'</i>",
+        "<i>'You are having trouble with: ________________.'</i>",
+
+        "How would you respond to the following user query? (Please try to use the templates)",
+        "User: <i>'I've had incredibly stressful weeks and it prevents me focusing on my studies. '</i>"
+      ],
+      reply: [{
+          question: "click me to type in the text area below 👇",
+          answer: "ref_listening_templates_test"
+        }
+
+      ]
+    },
+
+    "ref_listening_templates_tips": {
+      says: [
+        "Here are some great tips from me:",
+        "when you listen carefully to the user, he/she would say things about his/her problems and his/her feelings/emotions.",
+        "You need to repeat his/her statements about his/her problems or feelings when he/she finishes speaking.",
+        "This will show that you are listening to the user and you are very concerned about his/her problems.",
+        "Does it sound easy?"
+      ],
+      reply: [{
+          question: "yes",
+          answer: "ref_listening_empathy1"
+        },
+        {
+          question: "Nope",
+          answer: "ref_listening_templates_tips1"
+        },
+
+      ]
+    },
+
+    "ref_listening_empathy": {
+      says: [
+        "Great!, you are progressing really fast 😍!",
+        "Another important thing about the reflective listening is that you need to show empathy by using empathetic phrases before repeating what the user has said.",
+        "Let's try to make your phrase more empathetic based on previous user query:",
+        "User: <i>'I've had incredibly stressful weeks and it prevents me focusing on my studies. '</i>"
+      ],
+      reply: [{
+          question: "click me to type in the text area below 👇",
+          answer: "ref_listening_empathy_test"
+        },
+
+      ]
+    },
+
+    "ref_listening_empathy_examples": {
+      says: [
+        "Here are some examples of empathetic phrases",
+        "<i>'I am so sorry that you are in this situation...'</i>",
+        "<i>'I could imagine how difficult it is to be in this situation...'</i>",
+        "<i>'Oh that’s really difficult/terrible/hard...'</i>"
+      ],
+      reply: [{
+          question: "OK, I got it",
+          answer: "ref_listening_quiz"
+        },
+
+      ]
+    },
+
+    "ref_listening_quiz": {
+      says: [
+        "Time for Quiz 💪",
+        "What is reflective listening?"
+      ],
+      reply: [{
+          question: "<b>A.</b> Reflect back and validate the user problems",
+          answer: "ref_listening_wrong1"
+        },
+        {
+          question: "<b>B.</b>Resolving discrepancy",
+          answer: "ref_listening_wrong1"
+        },
+        {
+          question: "<b>C.</b>Showing empathy",
+          answer: "ref_listening_wrong1"
+        },
+        {
+          question: "<b>D.</b>Both A & C",
+          answer: "ref_listening_correct1"
+        },
+
+      ]
+    },
+
+    "ref_listening_correct": {
+      says: [
+        "Congratulations! 👏",
+        "You have successfully completed reflective listening topic. Let’s proceed further. "
+      ],
+      reply: [{
+          question: "NEXT 👉",
+          answer: "open_questions"
+        }
+
+
+      ]
+    },
+
+    "ref_listening_wrong": {
+      says: [
+        "😟",
+        "It is not the right option.",
+        "In refective listening, you do not only 'Reflect back and validate the user's problems but you also show empathy towards him/her",
+        "Please select what would you like to do next?"
+      ],
+      reply: [
+        // {
+        //   question: "take me to the next step anyway",
+        //   answer: "open_questions"
+        // },
+        {
+          question: "Show me the quiz again",
+          answer: "ref_listening_quiz"
+        },
+        {
+          question: "Show me reflective listening topic again",
+          answer: "ref_listening"
+        }
+
+      ]
+    },
+
+
+    "open_questions": {
+      says: [
+        "Next we learn about how to ask open questions.",
+        "Open ended questions are very useful for getting a conversation going and helps you to explore negative self-talk.",
+        "They also prevent you from making the mistake of assuming you know what’s going on for someone or how they feel."
+      ],
+      reply: [{
+          question: "OK, show me examples",
+          answer: "open_questions_examples"
+        },
+
+      ]
+    },
+
+    "open_questions_examples": {
+      says: [
+        "Example 1: '<i> How much does that concern you? In what ways?'</i>",
+        "Example 2: '<i> What do you think will happen if you do not take action against your problem?'</i>"
+      ],
+      reply: [{
+          question: "OK, I got it",
+          answer: "open_questions_types"
+        },
+
+      ]
+    },
+
+    "open_questions_types": {
+      says: [
+        "The open questions can be divided into two categories.",
+        "a. Focusing questions",
+        "b.	Evoking questions",
+        "Click on 'Focusing questions' below"
+      ],
+      reply: [{
+          question: "Focusing Questions",
+          answer: "open_questions_focusing"
+        },
+
+      ]
+    },
+
+    "open_questions_focusing": {
+      says: [
+        "In focusing question, you ask the user to detail their problem, possibly having them identify an inner struggle.",
+        "Example of focusing question is: ",
+        "<i>'How would you feel about that?'</i>",
+        "Could you please propose one focusing question different than the previous example?"
+
+      ],
+      reply: [{
+        question: "click me to type in the text area below 👇",
+        answer: "open_questions_focusing_test"
+      }, ]
+    },
+
+    "open_questions_focusing_examples": {
+      says: [
+        "Here are some more examples:",
+        "<i>'What kinds of things can help you settle down?</i>",
+        "<i>'What things make you think that this is a problem?</i>",
+        "<i>'What keeps this problem going?</i>",
+
+      ],
+      reply: [{
+          question: "Select evoking question",
+          answer: "open_questions_evoking"
+        }
+
+      ]
+    },
+
+    "open_questions_evoking": {
+      says: [
+        "In evoking question, you can explore about: ",
+        "a. User goals",
+        "b. What coping strategies have been tried out by the user to overcome them?",
+        "c. What are the major strenghts of the user?",
+        "Example 1:  <i>'How have you coped with difficult times in the past?'</i>",
+        "Example 2:  <i>'What were your initial goals when you first planned for a graduate degree?'</i>",
+        "Please propose one evoking question different than the previous examples"
+      ],
+      reply: [
+
+        {
+          question: "click me to type in the text area below 👇",
+          answer: "open_questions_evoking_test"
+        }
+      ]
+    },
+
+    "open_questions_evoking_examples": {
+      says: [
+        "Here are some more examples: ",
+        "<i>'What worries you about your current situation?'</i>",
+        "<i>'What do you think will happen if you do not take action against your problem?'</i>"
+
+      ],
+      reply: [{
+        question: "OK, take me to the next step",
+        answer: "open_questions_quiz1"
+      }]
+    },
+
+    "open_questions_quiz1": {
+      says: [
+        "Its time to test your skills 💪",
+        "Which one of the following are/is open question(s)?"
+      ],
+      reply: [{
+          question: "How long ago did you take your medicines? ",
+          answer: "open_questions_quiz1_wrong1"
+        },
+        {
+          question: "What do you think about the possibility of taking your medicines regularly? ",
+          answer: "open_questions_quiz1_correct1"
+        },
+        {
+          question: "Do you like to smoke?  ",
+          answer: "open_questions_quiz1_wrong1"
+        }
+
+
+      ]
+    },
+
+    "open_questions_quiz1_correct": {
+      says: [
+        "Well done! 👏",
+        "Here is another short quiz"
+      ],
+      reply: [{
+          question: "Take me to Quiz 2",
+          answer: "open_questions_quiz2"
+        }
+
+
+      ]
+    },
+
+    "open_questions_quiz2": {
+      says: [
+        "Which of the following is a focusing question?"
+      ],
+      reply: [{
+          question: "Did you try meditation?",
+          answer: "open_questions_quiz2_wrong1"
+        },
+        {
+          question: "Could you say some more about that?",
+          answer: "open_questions_quiz31"
+        },
+        {
+          question: "Do you think that adopting a cat might help?",
+          answer: "open_questions_quiz2_wrong1"
+        }
+
+
+      ]
+    },
+
+    "open_questions_quiz2_correct": {
+      says: [
+        "Well done! 👏",
+        "Here is another short quiz"
+      ],
+      reply: [{
+          question: "Take me to Quiz 3",
+          answer: "open_questions_quiz3"
+        }
+
+
+      ]
+    },
+
+    "open_questions_quiz3": {
+      says: [
+        "Well done! 👏",
+        "Here is another short quiz",
+        "Which of the following are/is the evoking question(s)?"
+      ],
+      reply: [{
+          question: "a.	What do you do that helps?",
+          answer: "open_questions_quiz3_wrong1"
+        },
+        {
+          question: "b.	What do you say to yourself that helps you cope?",
+          answer: "open_questions_quiz3_wrong1"
+        },
+        {
+          question: "c.	Do you have partner in your life?",
+          answer: "open_questions_quiz3_wrong1"
+        },
+        {
+          question: "d.	Both a and b",
+          answer: "open_questions_quiz3_correct1"
+        }
+
+      ]
+    },
+
+    "open_questions_quiz3_correct": {
+      says: [
+        "Well done! 👏",
+        "You're just few steps away!"
+      ],
+      reply: [{
+          question: "Let me move forward",
+          answer: "open_questions_summary"
+        }
+
+
+      ]
+    },
+
+
+    "open_questions_quiz1_wrong": {
+      says: [
+        "😟",
+        "You choose the wrong option",
+        "Here is the reason why it was incorrect: open questions cannot be answered with yes or no.",
+        "they invite user to think deeper and come up with more detailed answer."
+      ],
+      reply: [{
+          question: "OK, I got it",
+          answer: "End"
+        },
+        {
+          question: "I want to take that quiz again",
+          answer: "open_questions_quiz1"
+        },
+        {
+          question: "I want to see the details of open question one more time",
+          answer: "open_questions"
+        }
+
+      ]
+    },
+
+    "open_questions_quiz2_wrong": {
+      says: [
+        "😟",
+        "You choose the wrong option",
+        "Here is the reason why it was incorrect: in focusing questions, you want to know more about the problem",
+        "the option that you choose might be answered with yes/no",
+        "💡 There maybe more than one options which are true. Look carefully!"
+      ],
+      reply: [{
+          question: "OK, I got it",
+          answer: "End"
+        },
+        {
+          question: "I want to take that quiz again",
+          answer: "open_questions_quiz2"
+        },
+        {
+          question: "I want to see the details of open question one more time",
+          answer: "open_questions"
+        }
+
+      ]
+    },
+
+    "open_questions_quiz3_wrong": {
+      says: [
+        "😟",
+        "You choose the wrong option",
+        "Here is the reason why it was incorrect: in evoking questions, you want to know about the coping skills and strenghts of the user",
+        "💡 There maybe more than one options which are true. Look carefully!"
+      ],
+      reply: [
+        // {
+        //   question: "OK, I got it",
+        //   answer: "open_questions_summary"
+        // },
+        {
+          question: "I want to take that quiz again",
+          answer: "open_questions_quiz3"
+        },
+        {
+          question: "I want to see the details of open question one more time",
+          answer: "open_questions"
+        }
+
+      ]
+    },
+
+    "open_questions_summary": {
+      says: [
+        "At the end of this step, you should be able to know the following;",
+        "1.	What are real problems of user?",
+        "2. Why these problems bother him/her?",
+        "3.	What strategies the user has used to overcome it?",
+        "4.	What are the strengths of the user?"
+      ],
+      reply: [{
+          question: "OK, I got it",
+          answer: "open_questions_affirm"
+        },
+
+
+      ]
+    },
+
+    "open_questions_affirm": {
+      says: [
+        "When you find some strengths in user or coping skills, you need to affirm them. ",
+        "One way of doing this is to make statements of recognition of user strengths",
+        "E.g. <i>'not everyone manages to tackle it the way you tackled it, well done!'</i>",
+        "<i>'You have amazing skill of socializing with people very quickly!'</i>",
+
+        "How would you affirm the user based on the following user query?",
+        "User: <i>'I usually cook when I am worried. My dad is Italian, so he teaches me about all the Mediterranean foods...'</i>"
+      ],
+      reply: [{
+        question: "click me to type in the text area below 👇",
+        answer: "open_questions_affirm_test"
+      }]
+    },
+
+    "open_questions_caution": {
+      says: [
+        "You should never do the following",
+
+        "👎	Don't ask personal questions. For example, '<i>do you have partner in your life?</i>'",
+        "👎	Don't force your ideas: '<i>I think you should definitely try out walking</i>'",
+        "👎	Don't ask about religion and belief system without the consent of the user.",
+        // "👎  Avoid distractions: '<i>you have a nice shirt, where did you purchase it?</i>'",
+        // "👎  Don't give solutions quickly at the start of the conversations "
+      ],
+      reply: [{
+          question: "OK, I got it",
+          answer: "open_questions_golden_tip"
+        },
+        {
+          question: "Click for the Golden tip",
+          answer: "open_questions_golden_tip"
+        },
+
+
+      ]
+    },
+
+    "open_questions_golden_tip": {
+      says: [
+        "It is important for the coach to get into the negative self-talk that " +
+        "is contributing to the stress. This intervention can be done pretty quickly in session" +
+        " and it will help the user connect the 'feeling' (i.e., stress) with the 'thought' associated with the stress. " +
+        "In the user’s case, the thoughts can be things like, '<i>I'm not smart enough</i>,' " +
+        "'<i>'This work is too much for me'</i>, <i>'I'll never succeed</i>,' etc. "
+      ],
+      reply: [{
+          question: "OK, take me to the last step",
+          answer: "planning"
+        },
+
+
+      ]
+    },
+
+
+    "planning": {
+      says: [
+        "In the planning step, you need to do the following:",
+        "1. summarize all the coping strategies, good habits and personal strenghts of the user",
+        "2. propose him/her few solutions based on their personal strengths and wait for their consent",
+        "3. If they show interest in any of them, advise him/her to practice few of them"
+      ],
+      reply: [{
+          question: "OK, end this training now!",
+          answer: "End"
+        },
+
+
+      ]
+    },
+
+    End: {
+      says: [
+        "Thanks for your time and attention.",
+        "The training is over!!!"
+      ],
+      reply: [{
+        question: "Click here to proceed next",
+        answer: "enjoyment"
+      }]
+    }
+  } // end conversation object
+
+// function skip(){
+//   window.location.replace("http://127.0.0.1:5000/enjoyment" + "?bonus=" + _bonus+"&workerId="+gup('workerId'));
+// }
+  $(function() {
+              $("#dialog").dialog({
+                modal: true,
+                width: 600,
+                resizeable: false,
+                draggable: false,
+                // position: top,
+                  buttons: {
+                      OK: function() {
+                          $(this).dialog("close");
+                          $("html, body").animate({ scrollTop: 0 }, "slow");
+                          $(this).scrollTop(0);
+
+                          var name = localStorage.getItem("standingAnswer");
+                          var progress = localStorage.getItem("progressBarWidth");
+                          var _bonus_ = localStorage.getItem("bonus");
+
+                          if(_bonus_ === null || progress === null || name === null) {
+                            progress = '2%';
+                            _bonus_ = 0.20;
+                            name = 'ice';
+
+                            $("#bonus").text(_bonus_);
+                            chatWindow.talk(convo, name);
+                            $('#progress').css('width', progress);
+                            $('#progress').text(progress);
+                            // startTimer();
+                          }
+                          else {
+                          _bonus = parseFloat(_bonus_); //to update the dynamic _bonus variable so that it does not start with 0.20 after disruption
+                          $("#bonus").text(parseFloat(_bonus_).toFixed(2));
+                          chatWindow.talk(convo, name);
+                          $('#progress').css('width', progress);
+                          $('#progress').text(progress);
+                        }
+
+                          localStorage.removeItem("standingAnswer");
+                          localStorage.removeItem("progressBarWidth");
+                          localStorage.removeItem("bonus");
+                          startTimer();
+                      }
+                  },
+                  title: "Instructions"
+              });
+          });
+  $(window).on('beforeunload', function(e) {
+    localStorage.setItem("standingAnswer", standingAnswer);
+    localStorage.setItem("progressBarWidth", progressBarWidth);
+    localStorage.setItem("bonus", _bonus);
+    // return 'You have not yet saved your work.Do you want to continue? Doing so, may cause loss of your work' ;
+    // var msg = 'You are about to leave the page.  Continue?';
+    // (e || window.event).returnValue = msg; //IE + Gecko
+    // return msg; //Webkit
+
+    (e || window.event).returnValue = null;
+    return null;
+  });
+
+// window.onload = function() {
+//
+// };
+
+
+  function gup(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS);
+    var results = regex.exec(window.location.href);
+    if (results == null)
+      return "";
+    else
+      return unescape(results[1]);
+  }
+
+
+  $(window).scroll(function(e) {
+    var $el = $('.fixedElement');
+    var isPositionFixed = ($el.css('position') == 'fixed');
+    if ($(this).scrollTop() > 200 && !isPositionFixed) {
+      $el.css({
+        'position': 'fixed',
+        'top': '0px'
+      });
+    }
+    if ($(this).scrollTop() < 200 && isPositionFixed) {
+      $el.css({
+        'position': 'static',
+        'top': '0px'
+      });
+    }
+  });
+
+
+  $(document).ready(function() {
+    $("#bonus").text(parseFloat(gup('bonus')).toFixed(2));
+    $("textarea").prop('disabled', true);
+    console.log("ready!");
+  });
+
+  function enjoyment() {
+    if (localStorage.getItem("standingAnswer") != null) {
+      localStorage.removeItem("standingAnswer");
+    }
+
+    if (localStorage.getItem("progressBarWidth") != null) {
+      localStorage.removeItem("progressBarWidth");
+    }
+
+    if (localStorage.getItem("bonus") != null) {
+      localStorage.removeItem("bonus");
+    }
+    window.onbeforeunload = null;
+    window.location.replace("http://127.0.0.1:5000/enjoyment" + "?bonus=" + _bonus+"&workerId="+gup('workerId'));
+  }
+
+  function tryOutUserGreeting() {
+    $("textarea").prop('disabled', false);
+    $("textarea").focus();
+    stage = "tryOutUserGreeting";
+    console.log(standingAnswer);
+
+    // socket.emit('setTime', {});
+
+    $.ajax({
+      type: "POST",
+      url: "/setTime",
+      data: JSON.stringify({
+        "nothing": {}
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    // chatWindow.talk(convo, "greeting")
+  }
+
+  function yes_greeting_examples() {
+   console.log(standingAnswer);
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+        q: "Do you want to see some more good examples?",
+        ans: selected_answer,
+        rewardable: 'no',
+        workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    progressBarWidth = "15%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    console.log('yes_greeting_examples was called');
+
+    chatWindow.talk(convo, "greeting_examples");
+  }
+
+  function no_greeting_examples() {
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+        q: "Do you want to see some more good examples?",
+        ans: selected_answer,
+        rewardable: 'no',
+        workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    progressBarWidth = "15%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    console.log('no_greeting_examples was called');
+
+    chatWindow.talk(convo, "greeting_congrat");
+  }
+
+  function greeting_golden_tip1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "In a scale from 1 to 5 where 1 is a friend and 5 is a therapist, where do you think that a coach lies?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+        q: "In a scale from 1 to 5 where 1 is a friend and 5 is a therapist, where do you think that a coach lies?",
+        ans: selected_answer,
+        rewardable: 'no',
+        workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    progressBarWidth = "20%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    console.log('no_greeting_examples was called');
+
+    chatWindow.talk(convo, "greeting_golden_tip");
+  }
+
+  function greeting_wrong1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Which of the following are important steps to open a conversation with a person seeking life coaching?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which of the following are important steps to open a conversation with a person seeking life coaching?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    chatWindow.talk(convo, "greeting_wrong");
+
+  }
+
+  function greeting_correct1() {
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which of the following are important steps to open a conversation with a person seeking life coaching?",
+      ans: selected_answer,
+      rewardable: 'yes',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    _bonus = _bonus + 0.1
+    $("#bonus").text(_bonus.toFixed(2));
+
+    progressBarWidth = "25%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    console.log('no_greeting_examples was called');
+
+    chatWindow.talk(convo, "greeting_correct");
+
+  }
+
+  function ref_listening_start() {
+    console.log(standingAnswer);
+    $("textarea").prop('disabled', false);
+    $("textarea").focus();
+    stage = "ref_listening_start";
+    // socket.emit('setTime', {});
+
+    $.ajax({
+      type: "POST",
+      url: "/setTime",
+      data: JSON.stringify({
+        "nothing": {}
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    // chatWindow.talk(convo, "greeting")
+  }
+
+  function ref_listening_templates_consent1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Did you understand reflective listening?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Did you understand reflective listening?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    progressBarWidth = "35%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+    chatWindow.talk(convo, "ref_listening_templates_consent");
+
+  }
+
+  function ref_listening_elaborate_it_more1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Did you understand reflective listening?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Did you understand reflective listening?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    chatWindow.talk(convo, "ref_listening_elaborate_it_more");
+  }
+
+  function ref_listening_empathy1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Does it sound easy?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Does it sound easy?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    chatWindow.talk(convo, "ref_listening_empathy");
+  }
+
+  function ref_listening_templates_tips1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Does it sound easy?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Does it sound easy?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    chatWindow.talk(convo, "ref_listening_templates_tips");
+  }
+
+  function ref_listening_templates_test() {
+    $("textarea").prop('disabled', false);
+    $("textarea").focus();
+    stage = "ref_listening_templates_test";
+    // socket.emit('setTime', {});
+    $.ajax({
+      type: "POST",
+      url: "/setTime",
+      data: JSON.stringify({
+        "nothing": {}
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    // chatWindow.talk(convo, "greeting")
+  }
+
+  function ref_listening_empathy_test() {
+    $("textarea").prop('disabled', false);
+    $("textarea").focus();
+    stage = "ref_listening_empathy_test";
+    // socket.emit('setTime', {});
+    $.ajax({
+      type: "POST",
+      url: "/setTime",
+      data: JSON.stringify({
+        "nothing": {}
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+  }
+
+
+  function ref_listening_correct1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "What is reflective listening?",
+    //   ans: selected_answer,
+    //   rewardable: 'yes'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "What is reflective listening?",
+      ans: selected_answer,
+      rewardable: 'yes',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    _bonus = _bonus + 0.1
+    $("#bonus").text(_bonus.toFixed(2));
+
+    progressBarWidth = "50%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    chatWindow.talk(convo, "ref_listening_correct");
+  }
+
+  function ref_listening_wrong1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "What is reflective listening?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "What is reflective listening?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    chatWindow.talk(convo, "ref_listening_wrong");
+  }
+
+  function open_questions_focusing_test() {
+    $("textarea").prop('disabled', false);
+    $("textarea").focus();
+    stage = "open_questions_focusing_test";
+    // socket.emit('setTime', {});
+    $.ajax({
+      type: "POST",
+      url: "/setTime",
+      data: JSON.stringify({
+        "nothing": {}
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+  }
+
+  function open_questions_evoking_test() {
+    $("textarea").prop('disabled', false);
+    $("textarea").focus();
+    stage = "open_questions_evoking_test";
+    // socket.emit('setTime', {});
+
+    $.ajax({
+      type: "POST",
+      url: "/setTime",
+      data: JSON.stringify({
+        "nothing": {}
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+  }
+
+  function open_questions_quiz1_wrong1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Which one of the following are/is open question(s)?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which one of the following are/is open question(s)?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+
+    chatWindow.talk(convo, "open_questions_quiz1_wrong");
+  }
+
+  function open_questions_quiz1_correct1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Which one of the following are/is open question(s)?",
+    //   ans: selected_answer,
+    //   rewardable: 'yes'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which one of the following are/is open question(s)?",
+      ans: selected_answer,
+      rewardable: 'yes',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    _bonus = _bonus + 0.1
+    $("#bonus").text(_bonus.toFixed(2));
+
+    progressBarWidth = "75%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    chatWindow.talk(convo, "open_questions_quiz1_correct");
+  }
+
+  function open_questions_quiz2_wrong1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Which of the following is a focusing question?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which of the following is a focusing question?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    chatWindow.talk(convo, "open_questions_quiz2_wrong");
+  }
+
+  function open_questions_quiz31() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Which of the following is a focusing question?",
+    //   ans: selected_answer,
+    //   rewardable: 'yes'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which of the following is a focusing question?",
+      ans: selected_answer,
+      rewardable: 'yes',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+    _bonus = _bonus + 0.1
+    $("#bonus").text(_bonus.toFixed(2));
+
+    progressBarWidth = "80%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    chatWindow.talk(convo, "open_questions_quiz3");
+  }
+
+  function open_questions_quiz3_wrong1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Which of the following are/is the evoking question(s)?",
+    //   ans: selected_answer,
+    //   rewardable: 'no'
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which of the following are/is the evoking question(s)?",
+      ans: selected_answer,
+      rewardable: 'no',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    chatWindow.talk(convo, "open_questions_quiz3_wrong");
+  }
+
+  function open_questions_quiz3_correct1() {
+    // socket.emit('addshortAnswer', {
+    //   q: "Which of the following are/is the evoking question(s)?",
+    //   ans: selected_answer,
+    //   rewardable: 'yes'
+    // });
+    $.ajax({
+      type: "POST",
+      url: "/addshortAnswer",
+      data: JSON.stringify({
+      q: "Which of the following are/is the evoking question(s)?",
+      ans: selected_answer,
+      rewardable: 'yes',
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+    _bonus = _bonus + 0.1
+    $("#bonus").text(_bonus.toFixed(2));
+
+    progressBarWidth = "85%";
+    $('#progress').css('width', progressBarWidth);
+    $('#progress').text(progressBarWidth);
+
+    chatWindow.talk(convo, "open_questions_quiz3_correct");
+  }
+
+  function open_questions_affirm_test() {
+    $("textarea").prop('disabled', false);
+    $("textarea").focus();
+    stage = "open_questions_affirm_test";
+    // socket.emit('setTime', {});
+
+    $.ajax({
+      type: "POST",
+      url: "/setTime",
+      data: JSON.stringify({
+        "nothing": {}
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+  }
+
+  $("textarea").keydown(function(event) {
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if (keycode == '13') {
+      // alert("Thank you for your answer, Let's move forward 🙂");
+      $("textarea").prop('disabled', true);
+      if (stage == "tryOutUserGreeting") {
+        // socket.emit('addLongAnswer', {
+        //   q: "What do you think should be the first step to talk with a person seeking life coaching?",
+        //   ans: $("textarea").val(),
+        //   rewardable: 'yes'
+        // });
+        $.ajax({
+          type: "POST",
+          url: "/addLongAnswer",
+          data: JSON.stringify({
+          q: "What do you think should be the first step to talk with a person seeking life coaching?",
+          ans: $("textarea").val(),
+          rewardable: 'yes',
+          workerId: gup('workerId')
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          }
+        });
+
+        _bonus = _bonus + 0.1
+        $("#bonus").text(_bonus.toFixed(2));
+        progressBarWidth = "10%"
+        $('#progress').css('width', progressBarWidth);
+        $('#progress').text(progressBarWidth);
+
+
+        $("textarea").val('');
+        chatWindow.talk(convo, "greeting")
+      }
+      if (stage == "ref_listening_start") {
+
+        //get and send value to the server
+        var text = $("textarea").val();
+        // socket.emit('addLongAnswer', {
+        //   q: "Before showing you more examples, how would you respond to this user query?:User: 'This has been a very rough week for me.",
+        //   ans: text,
+        //   rewardable: 'yes'
+        // });
+        $.ajax({
+          type: "POST",
+          url: "/addLongAnswer",
+          data: JSON.stringify({
+          q: "Before showing you more examples, how would you respond to this user query?:User: 'This has been a very rough week for me.",
+          ans: text,
+          rewardable: 'yes',
+          workerId: gup('workerId')
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          }
+        });
+        $("textarea").val('');
+
+        $(document).scrollTop(0);
+
+        _bonus = _bonus + 0.1
+        $("#bonus").text(_bonus.toFixed(2));
+
+        //update progressbar
+        progressBarWidth = "30%";
+        $('#progress').css('width', progressBarWidth);
+        $('#progress').text(progressBarWidth);
+
+        chatWindow.talk(convo, "ref_listening_next");
+      }
+      if (stage == "ref_listening_templates_test") {
+
+        // socket.emit('addLongAnswer', {
+        //   q: "How would you respond to the following user query? (Please try to use the templates)",
+        //   ans: $("textarea").val(),
+        //   rewardable: 'yes'
+        // });
+
+        $.ajax({
+          type: "POST",
+          url: "/addLongAnswer",
+          data: JSON.stringify({
+          q: "How would you respond to the following user query? (Please try to use the templates)",
+          ans: $("textarea").val(),
+          rewardable: 'yes',
+          workerId: gup('workerId')
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          }
+        });
+
+        _bonus = _bonus + 0.1
+        $("#bonus").text(_bonus.toFixed(2));
+
+        progressBarWidth = "40%";
+        $('#progress').css('width', progressBarWidth);
+        $('#progress').text(progressBarWidth);
+
+        $("textarea").val('');
+        chatWindow.talk(convo, "ref_listening_templates_tips");
+
+      }
+      if (stage == "ref_listening_empathy_test") {
+
+        // socket.emit('addLongAnswer', {
+        //   q: "Let's try to make your phrase more empathetic based on previous user query",
+        //   ans: $("textarea").val(),
+        //   rewardable: 'yes'
+        // });
+
+        $.ajax({
+          type: "POST",
+          url: "/addLongAnswer",
+          data: JSON.stringify({
+          q: "Let's try to make your phrase more empathetic based on previous user query",
+          ans: $("textarea").val(),
+          rewardable: 'yes',
+          workerId: gup('workerId')
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          }
+        });
+
+        _bonus = _bonus + 0.1
+        $("#bonus").text(_bonus.toFixed(2));
+
+        progressBarWidth = "45%";
+        $('#progress').css('width', progressBarWidth);
+        $('#progress').text(progressBarWidth);
+
+        $("textarea").val('');
+        chatWindow.talk(convo, "ref_listening_empathy_examples");
+
+      }
+      if (stage == "open_questions_focusing_test") {
+
+        // socket.emit('addLongAnswer', {
+        //   q: "Could you please propose one focusing question different than the previous example?",
+        //   ans: $("textarea").val(),
+        //   rewardable: 'yes'
+        // });
+
+        $.ajax({
+          type: "POST",
+          url: "/addLongAnswer",
+          data: JSON.stringify({
+          q: "Could you please propose one focusing question different than the previous example?",
+          ans: $("textarea").val(),
+          rewardable: 'yes',
+          workerId: gup('workerId')
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          }
+        });
+
+        _bonus = _bonus + 0.1
+        $("#bonus").text(_bonus.toFixed(2));
+
+        progressBarWidth = "60%";
+        $('#progress').css('width', progressBarWidth);
+        $('#progress').text(progressBarWidth);
+
+        $("textarea").val('');
+        chatWindow.talk(convo, "open_questions_focusing_examples");
+      }
+      if (stage == "open_questions_evoking_test") {
+
+        // socket.emit('addLongAnswer', {
+        //   q: "Please propose one evoking question different than the previous examples",
+        //   ans: $("textarea").val(),
+        //   rewardable: 'yes'
+        // });
+
+        $.ajax({
+          type: "POST",
+          url: "/addLongAnswer",
+          data: JSON.stringify({
+          q: "Please propose one evoking question different than the previous examples",
+          ans: $("textarea").val(),
+          rewardable: 'yes',
+          workerId: gup('workerId')
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          }
+        });
+
+        _bonus = _bonus + 0.1
+        $("#bonus").text(_bonus.toFixed(2));
+
+        progressBarWidth = "70%";
+        $('#progress').css('width', progressBarWidth);
+        $('#progress').text(progressBarWidth);
+        $("textarea").val('');
+        chatWindow.talk(convo, "open_questions_evoking_examples");
+      }
+      if (stage == "open_questions_affirm_test") {
+        // socket.emit('addLongAnswer', {
+        //   q: "How would you affirm the user based on the following user query?",
+        //   ans: $("textarea").val(),
+        //   rewardable: 'yes'
+        // });
+        $.ajax({
+          type: "POST",
+          url: "/addLongAnswer",
+          data: JSON.stringify({
+            q: "How would you affirm the user based on the following user query?",
+            ans: $("textarea").val(),
+            rewardable: 'yes',
+            workerId: gup('workerId')
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+          console.log(typeof(JSON.stringify(data)));
+          }
+        });
+
+        _bonus = _bonus + 0.1
+        $("#bonus").text(_bonus.toFixed(2));
+
+        progressBarWidth = "99%";
+        $('#progress').css('width', progressBarWidth);
+        $('#progress').text(progressBarWidth);
+        $("textarea").val('');
+        chatWindow.talk(convo, "open_questions_caution");
+      }
+    }
+  });
+
+  window.onscroll = function() {
+    myFunction()
+  };
+
+  var header = document.getElementById("myHeader");
+  var sticky = header.offsetTop;
+
+  function myFunction() {
+    if (window.pageYOffset > sticky) {
+      header.classList.add("sticky");
+    } else {
+      header.classList.remove("sticky");
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+
+  <script type="text/javascript" src="{{url_for('static', filename='js/jquery.js')}}"></script>
+  <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+  <style>
+    .error {
+      color: red;
+      margin-left: 5px;
+    }
+
+    label.error {
+      display: inline;
+    }
+
+    .ui-dialog-titlebar-close {
+      visibility: hidden;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="alert alert-success" role="alert">
+    <h4 class="alert-heading"></h4>
+    <p> Please indicate how confident you are in your ability to do each of the following tasks effectively? 0 means 'no confidence' while 9 means 'complete confidence'. The button (Proceed next) will be enabled once you select all options</p>
+    <hr>
+    <p class="mb-0"><b>You will earn 20 cents!</b></p>
+  </div>
+  <div id="dialog" title="Basic dialog">
+    <h4 style="color:green;">Please read these instructions carefully before starting</h4>
+    <p>In this task, you will be asked to assess yourself about your ability to provide counseling to a person who is distress or worry. </p>
+    <p>This task does not assume that you are expert in the clinical psychology or psychotherapeutic field. </p>
+    <p>If you don’t know the answer of few items or don’t understand what it means, just fill it out based on your best understanding. </p>
+    <p><b>You will be awarded 20 cents for answering this short survey!</b></p>
+
+  </div>
+
+  <div class="row">
+    <div class="form-group col-xs-5 col-lg-5">
+      <label for="code">Please enter your Worker ID first!</label>
+      <input type="text" class="form-control" id="workerid" />
+    </div>
+  </div>
+
+
+  <!-- <div id = "dialog-4" title = "Dialog Title goes here...">This my first jQuery UI Dialog!</div> -->
+
+  <!-- <button type="button" class="btn btn-primary btn-lg btn-block">Please indicate how confident you are in your ability to do each of the following tasks effectively? 0 means 'no confidence' while 9 means 'complete confidence'</button>
+  <div class="text-center">
+    <button type="button" class="btn btn-danger">The button (Proceed next) will be enabled once you select all options</button>
+  </div> -->
+
+  <!-- <button type="button" class="btn btn-primary btn-lg btn-block">Please indicate how confident you are in your ability to do each of the following tasks effectively? 0 means 'no confidence' while 9 means 'complete confidence'</button> -->
+  <!-- <h4>Please indicate how confident you are in your ability to do each of the following tasks effectively? 0 means 'no confidence' while 9 means 'complete confidence'</h4> -->
+
+  <table class="table table-dark">
+    <thead class="thead-dark">
+      <tr>
+        <th scope="col">Tasks</th>
+        <th scope="col">0</th>
+        <th scope="col">1</th>
+        <th scope="col">2</th>
+        <th scope="col">3</th>
+        <th scope="col">4</th>
+        <th scope="col">5</th>
+        <th scope="col">6</th>
+        <th scope="col">7</th>
+        <th scope="col">8</th>
+        <th scope="col">9</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td scope="row">Help your client to understand his or her thoughts, feelings, and actions.</td>
+        <td><input type="radio" value="0" name="understand" /></td>
+        <td><input type="radio" value="1" name="understand" /></td>
+        <td><input type="radio" value="2" name="understand" /></td>
+        <td><input type="radio" value="3" name="understand" /></td>
+        <td><input type="radio" value="4" name="understand" /></td>
+        <td><input type="radio" value="5" name="understand" /></td>
+        <td><input type="radio" value="6" name="understand" /></td>
+        <td><input type="radio" value="7" name="understand" /></td>
+        <td><input type="radio" value="8" name="understand" /></td>
+        <td><input type="radio" value="9" name="understand" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Know what to do or say next after your client talks.</td>
+        <td><input type="radio" value="0" name="say_next" /></td>
+        <td><input type="radio" value="1" name="say_next" /></td>
+        <td><input type="radio" value="2" name="say_next" /></td>
+        <td><input type="radio" value="3" name="say_next" /></td>
+        <td><input type="radio" value="4" name="say_next" /></td>
+        <td><input type="radio" value="5" name="say_next" /></td>
+        <td><input type="radio" value="6" name="say_next" /></td>
+        <td><input type="radio" value="7" name="say_next" /></td>
+        <td><input type="radio" value="8" name="say_next" /></td>
+        <td><input type="radio" value="9" name="say_next" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Help your client to talk about his or her concerns at a deep level.</td>
+        <td><input type="radio" value="0" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="1" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="2" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="3" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="4" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="5" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="6" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="7" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="8" name="Help_client_to_talk" /></td>
+        <td><input type="radio" value="9" name="Help_client_to_talk" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Build a clear conceptualization of your client and his or her counseling issues</td>
+        <td><input type="radio" value="0" name="conceptualization" /></td>
+        <td><input type="radio" value="1" name="conceptualization" /></td>
+        <td><input type="radio" value="2" name="conceptualization" /></td>
+        <td><input type="radio" value="3" name="conceptualization" /></td>
+        <td><input type="radio" value="4" name="conceptualization" /></td>
+        <td><input type="radio" value="5" name="conceptualization" /></td>
+        <td><input type="radio" value="6" name="conceptualization" /></td>
+        <td><input type="radio" value="7" name="conceptualization" /></td>
+        <td><input type="radio" value="8" name="conceptualization" /></td>
+        <td><input type="radio" value="9" name="conceptualization" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Help your client to explore his or her thoughts, feelings, and actions.</td>
+        <td><input type="radio" value="0" name="explore" /></td>
+        <td><input type="radio" value="1" name="explore" /></td>
+        <td><input type="radio" value="2" name="explore" /></td>
+        <td><input type="radio" value="3" name="explore" /></td>
+        <td><input type="radio" value="4" name="explore" /></td>
+        <td><input type="radio" value="5" name="explore" /></td>
+        <td><input type="radio" value="6" name="explore" /></td>
+        <td><input type="radio" value="7" name="explore" /></td>
+        <td><input type="radio" value="8" name="explore" /></td>
+        <td><input type="radio" value="9" name="explore" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Respond with the best helping skill, depending on what your client needs at a given moment.</td>
+        <td><input type="radio" value="0" name="helping_skill" /></td>
+        <td><input type="radio" value="1" name="helping_skill" /></td>
+        <td><input type="radio" value="2" name="helping_skill" /></td>
+        <td><input type="radio" value="3" name="helping_skill" /></td>
+        <td><input type="radio" value="4" name="helping_skill" /></td>
+        <td><input type="radio" value="5" name="helping_skill" /></td>
+        <td><input type="radio" value="6" name="helping_skill" /></td>
+        <td><input type="radio" value="7" name="helping_skill" /></td>
+        <td><input type="radio" value="8" name="helping_skill" /></td>
+        <td><input type="radio" value="9" name="helping_skill" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Help your client to set realistic counseling goals.</td>
+        <td><input type="radio" value="0" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="1" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="2" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="3" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="4" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="5" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="6" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="7" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="8" name="realistic_counseling_goals" /></td>
+        <td><input type="radio" value="9" name="realistic_counseling_goals" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Keep sessions on track and focused.</td>
+        <td><input type="radio" value="0" name="focused" /></td>
+        <td><input type="radio" value="1" name="focused" /></td>
+        <td><input type="radio" value="2" name="focused" /></td>
+        <td><input type="radio" value="3" name="focused" /></td>
+        <td><input type="radio" value="4" name="focused" /></td>
+        <td><input type="radio" value="5" name="focused" /></td>
+        <td><input type="radio" value="6" name="focused" /></td>
+        <td><input type="radio" value="7" name="focused" /></td>
+        <td><input type="radio" value="8" name="focused" /></td>
+        <td><input type="radio" value="9" name="focused" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Remain aware of your intentions (i.e., the purposes of your interventions) during sessions.</td>
+        <td><input type="radio" value="0" name="intentions" /></td>
+        <td><input type="radio" value="1" name="intentions" /></td>
+        <td><input type="radio" value="2" name="intentions" /></td>
+        <td><input type="radio" value="3" name="intentions" /></td>
+        <td><input type="radio" value="4" name="intentions" /></td>
+        <td><input type="radio" value="5" name="intentions" /></td>
+        <td><input type="radio" value="6" name="intentions" /></td>
+        <td><input type="radio" value="7" name="intentions" /></td>
+        <td><input type="radio" value="8" name="intentions" /></td>
+        <td><input type="radio" value="9" name="intentions" /></td>
+      </tr>
+      <tr>
+        <td scope="row">Help your client to decide what actions to take regarding his or her problems.</td>
+        <td><input type="radio" value="0" name="planning" /></td>
+        <td><input type="radio" value="1" name="planning" /></td>
+        <td><input type="radio" value="2" name="planning" /></td>
+        <td><input type="radio" value="3" name="planning" /></td>
+        <td><input type="radio" value="4" name="planning" /></td>
+        <td><input type="radio" value="5" name="planning" /></td>
+        <td><input type="radio" value="6" name="planning" /></td>
+        <td><input type="radio" value="7" name="planning" /></td>
+        <td><input type="radio" value="8" name="planning" /></td>
+        <td><input type="radio" value="9" name="planning" /></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="text-center">
+    <label for="message"></label>
+    <button type="button" class="btn btn-warning" id='nextbtn'>Proceed Next</button>
+  </div>
+  <script>
+    $(document).ready(function() {
+      if (localStorage.getItem("standingAnswer") != null) {
+        localStorage.removeItem("standingAnswer");
+      }
+
+      if (localStorage.getItem("progressBarWidth") != null) {
+        localStorage.removeItem("progressBarWidth");
+      }
+
+      if (localStorage.getItem("bonus") != null) {
+        localStorage.removeItem("bonus");
+      }
+
+    });
+    $(function() {
+      $("#dialog").dialog({
+        modal: true,
+        width: 500,
+        resizeable: false,
+        draggable: false,
+
+        buttons: {
+          OK: function() {
+            $(this).dialog("close");
+          }
+        },
+        title: "Instructions"
+      });
+    });
+    var understand;
+    var say_next;
+    var Help_client_to_talk;
+    var conceptualization;
+    var explore;
+    var helping_skill;
+    var realistic_counseling_goals;
+    var focused;
+    var intentions;
+    var planning;
+    $('input:radio').click(function() {
+      understand = $('input:radio[name=understand]:checked').val();
+      say_next = $('input:radio[name=say_next]:checked').val();
+      Help_client_to_talk = $('input:radio[name=Help_client_to_talk]:checked').val();
+      conceptualization = $('input:radio[name=conceptualization]:checked').val();
+      explore = $('input:radio[name=explore]:checked').val();
+      helping_skill = $('input:radio[name=helping_skill]:checked').val();
+      realistic_counseling_goals = $('input:radio[name=realistic_counseling_goals]:checked').val();
+      focused = $('input:radio[name=focused]:checked').val();
+      intentions = $('input:radio[name=intentions]:checked').val();
+      planning = $('input:radio[name=planning]:checked').val();
+
+    });
+
+    $(function() {
+      var button = $('#nextbtn').prop('disabled', true);
+      var radios = $('input[type="radio"]');
+      var arr = $.map(radios, function(el) {
+        return el.name;
+      });
+
+      var groups = $.grep(arr, function(v, k) {
+        return $.inArray(v, arr) === k;
+      }).length;
+
+      radios.on('change', function() {
+        button.prop('disabled', radios.filter(':checked').length < groups);
+      });
+    });
+    //////////////////////////////////////////////////////////////////////////////
+
+    $('#nextbtn').click(function() {
+      var Exp = /^([a-zA-Z0-9_-]){24}$/;
+      var workerid = document.getElementById("workerid").value;
+      if (workerid.trim() == '') {
+        alert("Please enter your worker ID first");
+      }
+      if (!workerid.match(Exp))
+        alert("Please Enter your prolific ID containing 24 alphanumeric characters!");
+
+      else {
+        $.ajax({
+          type: "POST",
+          url: "/scale_data",
+          data: JSON.stringify({
+            "understand": understand,
+            "say_next": say_next,
+            "Help_client_to_talk": Help_client_to_talk,
+            "conceptualization": conceptualization,
+            "explore": explore,
+            "helping_skill": helping_skill,
+            "realistic_counseling_goals": realistic_counseling_goals,
+            "focused": focused,
+            "intentions": intentions,
+            "planning": planning,
+            'workerId': workerid,
+            'status': 'before'
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function(data) {
+            console.log(typeof(JSON.stringify(data)));
+            // alert('done!');
+          }
+        });
+
+        var qs = {
+          'workerId': document.getElementById("workerid").value,
+          'bonus': 0.20
+        };
+        window.location.replace("http://127.0.0.1:5000/training" + "?" + $.param(qs));
+      }
+
+    });
+  </script>
+  <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+
+
+
+</body>
+
+</html>

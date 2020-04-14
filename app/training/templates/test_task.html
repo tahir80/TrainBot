@@ -1,0 +1,905 @@
+{% extends 'layout_testing.html' %}{% block content %}
+
+
+
+<div class="header" id="myHeader">
+  <div class="container">
+  <!-- <h2>Score Board</h2> -->
+  <table class="table borderless">
+    <!-- <thead>
+      <tr>
+        <th>Your Total Bonus</th>
+        <th>Time</th>
+        <th>Note</th>
+      </tr>
+    </thead> -->
+    <tbody>
+      <tr>
+        <td><h4>Your Bonus: <span id="bonus" style="color: #ffffff">{{bonus}}</span>$</h4></td>
+        <td><h4>Time Elapsed: <span id="timer" style="color: #ff00ff"></span></h4></td>
+        <td><h5><span id="timer" style="color: #00ff00">Please refresh the page, if you encounter any problem. The conversation is resumed from the point where the disruption happens.</span></h5></td>
+      </tr>
+
+      <tr>
+    <td colspan="3">
+
+      <div class="progress">
+  <div id="progress" class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar"
+  aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:1%">
+    1%
+  </div>
+</div>
+
+    </td>
+     </tr>
+
+    </tbody>
+  </table>
+</div>
+</div>
+
+<div class="content">
+
+  <div id="chat">
+  </div>
+</div>
+
+
+    <script>
+    var training_data = [];
+    var stage = '';
+    var socket = '';
+    var selectedText = '';
+    var _bonus = {{bonus}};
+    var robot_utt = '';
+    var user_utt = '';
+    var counter = 0;
+    var progress_counter = 0;
+    // var progressBarWidth= "2";
+
+var user_robot = [
+["User: I had a quite stressful few weeks really and it kept me from focusing on my studies. I would like to talk to you about that.",
+"Robot: Can you tell me a bit about what's made you stressed?"],
+["User: Yes. I moved from Belgium to the Netherlands 3 months ago to do minor in Industrial design so it’s totally new city and new the house where I am living in and the subjects are so different and they (professors) take different angle than what I am used to, and it is very difficult to find ground to walk on almost.",
+"Robot: Are there any language barriers you have to deal with?"],
+["User: Not really because in Belgium we speak Flounderish and in Holland, they speak Dutch and it’s the same language.",
+"Robot: So, the differences between your studies and studying life are feeling overwhelming?"],
+["User: Yes, overwhelming is exactly what it is. yeah",
+"Robot: What do you think would help you the most with your studies?"],
+["User: maybe confidence…. I want two things really… one is confidence because I don't know what my professor is expecting of me. it’s such a different content than I used to in Belgium. Second, I need to interview people and it's difficult to find people to interview. So those two things would be nice…",
+"Robot: Would it be possible to seek advice from people who have made the same kind of move as you?"],
+["User: Maybe that could help yeah. I would need to do the work myself though you know.",
+"Robot: I believe in you, if that helps!"],
+["User: that's nice to know anyway. Yes. it would be nice to find that believe myself or to find that back to say.",
+"Robot: Perhaps clearing some free time in your schedule to relax while going through this transition would help"],
+["User: it would be nice to find free time although I'm already behind on my schedule. I should actually spend even more time on my study so that I will be able to finish it on time.",
+"Robot: Working harder is not always the best option though."],
+["User: you're absolutely right. But how to do it, you are right. I was hoping that I would get some sleep, but I have 5 extremely noisy roommates",
+"Robot: Sometimes taking a break and focusing on yourself will increase productivity. Can you try playing low volume rain sounds or something to drown them out? It is a background sound that's relaxing to listen, and it will drown out the loud sounds that your roommates make."],
+["User: ahh… well I have not tried that, so I'll try to do that. But I’m bit anxious maybe you can see. So, I will try to do some what's it called rain noises. It's difficult to plan even now anything you know…my brain is not up for it almost…would you have some tips for that maybe?",
+"Robot: I'd definitely say sleep will help you a lot. You'll be able to focus a lot more. Maybe try taking a nap during the day if you can find a time when your roommates are gone."],
+["User: that’s a good tip. I did try that. They are five so they're mostly at home, but I will give it a go and sometimes it works. So, I have to go now… thank you so much for having this conversation with me.", "Robot: Thank you! I enjoyed talking with you. I really hope you can find some space to relax.",
+"Robot: Thank you! I enjoyed talking with you. I really hope you can find some space to relax."]];
+
+// var exchange = user_robot[counter];
+// user_utt = exchange[0];
+// robot_utt = exchange[1];
+// console.log(user_robot);
+
+    var chatWindow = new Bubbles(document.getElementById("chat"), "chatWindow", {
+
+      // the one that we care about is inputCallbackFn()
+      // this function returns an object with some data that we can process from user input
+      // and understand the context of it
+      //
+      // this is an example function that matches the text user typed to one of the answer bubbles
+      // this function does no natural language processing
+      // this is where you may want to connect this script to NLC backend.
+      inputCallbackFn: function(o) {
+
+      }
+    }); // done setting up chat-bubble
+
+
+    var convo = {
+      "ice": {
+      // "says" defines an array of sequential bubbles
+      // that the bot will produce
+      says: [
+        "<b>" + user_robot[0][0] + "</b>"
+      ],
+      // "reply" is an array of possible options the user can pick from
+      // as a reply
+      reply: [
+        {
+          question: "click me to type in the text area below 👇",
+          answer: "user_reply1" // key for the next conversation objec
+        }
+      ]
+    },
+
+    "robot1": {
+    says: [
+      "Here is how the Robot responded to the above user query",
+      // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+      "<b>"+user_robot[0][1]+"</b>"
+    ],
+    // "reply" is an array of possible options the user can pick from
+    // as a reply
+    reply: [
+      {
+        question: "click to continue...",
+        answer: "user2" // key for the next conversation objec
+      }
+    ]
+  },
+
+  "user2": {
+  // "says" defines an array of sequential bubbles
+  // that the bot will produce
+  says: [
+    "<b>" + user_robot[1][0] + "</b>"
+  ],
+  // "reply" is an array of possible options the user can pick from
+  // as a reply
+  reply: [
+    {
+      question: "click me to type in the text area below 👇",
+      answer: "user_reply2" // key for the next conversation objec
+    }
+  ]
+},
+"robot2": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[1][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user3" // key for the next conversation objec
+  }
+]
+},
+
+"user3": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[2][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply3" // key for the next conversation objec
+  }
+]
+},
+
+"robot3": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[2][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user4" // key for the next conversation objec
+  }
+]
+},
+
+"user4": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[3][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply4" // key for the next conversation objec
+  }
+]
+},
+
+"robot4": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[3][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user5" // key for the next conversation objec
+  }
+]
+},
+"user5": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[4][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply5" // key for the next conversation objec
+  }
+]
+},
+
+"robot5": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[4][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user6" // key for the next conversation objec
+  }
+]
+},
+
+"user6": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[5][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply6" // key for the next conversation objec
+  }
+]
+},
+
+"robot6": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[5][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user7" // key for the next conversation objec
+  }
+]
+},
+
+"user7": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[6][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply7" // key for the next conversation objec
+  }
+]
+},
+
+"robot7": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[6][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user8" // key for the next conversation objec
+  }
+]
+},
+
+"user8": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[7][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply8" // key for the next conversation objec
+  }
+]
+},
+
+"robot8": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[7][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user9" // key for the next conversation objec
+  }
+]
+},
+
+"user9": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[8][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply9" // key for the next conversation objec
+  }
+]
+},
+
+"robot9": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[8][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user10" // key for the next conversation objec
+  }
+]
+},
+
+"user10": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[9][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply10" // key for the next conversation objec
+  }
+]
+},
+
+"robot10": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[9][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "user11" // key for the next conversation objec
+  }
+]
+},
+
+"user11": {
+// "says" defines an array of sequential bubbles
+// that the bot will produce
+says: [
+  "<b>" + user_robot[10][0] + "</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click me to type in the text area below 👇",
+    answer: "user_reply11" // key for the next conversation objec
+  }
+]
+},
+
+"robot11": {
+says: [
+  "Here is how the Robot responded to the above user query",
+  // "<img src='{{url_for('static', filename='img/pepper.png')}}' alt=''>",
+  "<b>"+user_robot[10][1]+"</b>"
+],
+// "reply" is an array of possible options the user can pick from
+// as a reply
+reply: [
+  {
+    question: "click to continue...",
+    answer: "end" // key for the next conversation objec
+  }
+]
+},
+
+end: {
+  says: [
+   "THE END"
+  ],
+  // "reply" is an array of possible options the user can pick from
+  // as a reply
+  reply: [
+    {
+      question: "Click to move to Prolific page",
+      answer: "NEXT" // key for the next conversation objec
+    }
+  ]
+}
+    } // end conversation object
+
+    // initialize by constructing a named function...
+    // var chatWindow = new Bubbles(
+    //   document.getElementById("chat"), // ...passing HTML container element...
+    //   "chatWindow" // ...and name of the function as a parameter
+    // )
+
+    // `.talk()` will get your bot to begin the conversation
+    $(function() {
+                $("#dialog").dialog({
+                  modal: true,
+                  width: 500,
+                  resizeable: false,
+                  draggable: false,
+
+                    buttons: {
+                        OK: function() {
+                            $(this).dialog("close");
+                            $("html, body").animate({ scrollTop: 0 }, "slow");
+
+
+                            /////////// logic for resuming task from the point of disruption
+                            var name = localStorage.getItem("standingAnswer_testing");
+                            var progress = localStorage.getItem("progressBarWidth_testing");
+                            var _bonus_ = localStorage.getItem("bonus_testing");
+
+                            if(_bonus_ === null || progress === null || name === null) {
+                              progress_counter = 0;
+                              _bonus_ = {{bonus}};
+                              name = 'ice';
+
+                              $("#bonus").text(_bonus_);
+                              chatWindow.talk(convo, name);
+                              $('#progress').css('width', progress+"%");
+                              $('#progress').text(progress);
+                              // startTimer();
+                            }
+                            else {
+                            _bonus = parseFloat(_bonus_); //to update the dynamic _bonus variable so that it does not start with 0.20 after disruption
+                            $("#bonus").text(parseFloat(_bonus_).toFixed(2));
+                            chatWindow.talk(convo, name);
+                            progress_counter = parseInt(progress);
+                            $('#progress').css('width', parseInt(progress)+"%");
+                            $('#progress').text(progress);
+                          }
+
+                            localStorage.removeItem("standingAnswer_testing");
+                            localStorage.removeItem("progressBarWidth_testing");
+                            localStorage.removeItem("bonus_testing");
+
+                            ///////////////////THE END/////////////////////////////////////
+                            // chatWindow.talk(convo);
+                            startTimer();
+                        }
+                    },
+                    title: "Instructions"
+                });
+            });
+
+    $(window).on('beforeunload', function(e) {
+    console.log('hi, was called');
+    localStorage.setItem("standingAnswer_testing", standingAnswer);
+    localStorage.setItem("progressBarWidth_testing", progress_counter);
+    localStorage.setItem("bonus_testing", _bonus);
+
+    (e || window.event).returnValue = null;
+    return null;
+
+    // var msg = 'You are about to leave the page.  Continue?';
+    // (e || window.event).returnValue = msg;  //IE + Gecko
+    // return msg;  //Webkit
+});
+
+
+function gup(name) {
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexS = "[\\?&]" + name + "=([^&#]*)";
+  var regex = new RegExp(regexS);
+  var results = regex.exec(window.location.href);
+  if (results == null)
+    return "";
+  else
+    return unescape(results[1]);
+}
+
+
+$(window).scroll(function(e){
+  var $el = $('.fixedElement');
+  var isPositionFixed = ($el.css('position') == 'fixed');
+  if ($(this).scrollTop() > 200 && !isPositionFixed){
+    $el.css({'position': 'fixed', 'top': '0px'});
+  }
+  if ($(this).scrollTop() < 200 && isPositionFixed){
+    $el.css({'position': 'static', 'top': '0px'});
+  }
+});
+
+$( document ).ready(function() {
+$(this).scrollTop(0);
+$("textarea").prop('disabled', true);
+console.log( "ready!" );
+// var namespace = '/training_chat';
+// socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+// console.log(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+});
+
+//FUNCTIONS
+user_reply1 = function() {
+user_utt = user_robot[0][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply1";
+// socket.emit('setTime', {});
+
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply2 = function() {
+user_utt = user_robot[1][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply2";
+// socket.emit('setTime', {});
+
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply3 = function() {
+user_utt = user_robot[2][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply3";
+// socket.emit('setTime', {});
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply4 = function() {
+user_utt = user_robot[3][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply4";
+// socket.emit('setTime', {});
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply5 = function() {
+user_utt = user_robot[4][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply5";
+// socket.emit('setTime', {});
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply6 = function() {
+user_utt = user_robot[5][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply6";
+// socket.emit('setTime', {});
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply7 = function() {
+user_utt = user_robot[6][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply7";
+// socket.emit('setTime', {});
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply8 = function() {
+user_utt = user_robot[7][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply8";
+// socket.emit('setTime', {});
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply9 = function() {
+user_utt = user_robot[8][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply9";
+// socket.emit('setTime', {});
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+user_reply10 = function() {
+user_utt = user_robot[9][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply10";
+// socket.emit('setTime', {});
+
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+
+user_reply11 = function() {
+user_utt = user_robot[10][0]
+$("textarea").prop('disabled', false);
+$("textarea").focus();
+stage = "user_reply11";
+// socket.emit('setTime', {});
+
+$.ajax({
+  type: "POST",
+  url: "/setTime",
+  data: JSON.stringify({
+    "nothing": {}
+  }),
+  contentType: "application/json; charset=utf-8",
+  dataType: "json",
+  success: function(data) {
+  console.log(typeof(JSON.stringify(data)));
+  }
+});
+console.log('I was called, user reply function');
+// chatWindow.talk(convo, "robot_utterance")
+}
+
+NEXT = function( ) {
+  if (localStorage.getItem("standingAnswer_testing") != null) {
+    localStorage.removeItem("standingAnswer_testing");
+  }
+
+  if (localStorage.getItem("progressBarWidth_testing") != null) {
+    localStorage.removeItem("progressBarWidth_testing");
+  }
+
+  if (localStorage.getItem("bonus_testing") != null) {
+    localStorage.removeItem("bonus_testing");
+  }
+  window.onbeforeunload = null;
+  window.location.replace("https://images.app.goo.gl/mtQnvUQ1RAM4jVZx8");
+
+}
+
+$("textarea").keydown(function(event){
+var keycode = (event.keyCode ? event.keyCode : event.which);
+if(keycode == '13'){
+    // socket.emit('addTestingResponses',
+    // {
+    //   qs:user_utt,
+    // ans: $("textarea").val()
+    // });
+
+    $.ajax({
+      type: "POST",
+      url: "/addTestingResponses",
+      data: JSON.stringify({
+      qs:user_utt,
+      ans: $("textarea").val(),
+      workerId: gup('workerId')
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data) {
+      console.log(typeof(JSON.stringify(data)));
+      }
+    });
+
+
+    _bonus = _bonus + 0.1;
+    $("#bonus").text(_bonus.toFixed(2));
+    if(progress_counter >= 90) progress_counter += 5;
+    else progress_counter += 10;
+    p = progress_counter+"%";
+    $('#progress').css('width', p);
+    $('#progress').text(p);
+    $("textarea").val('');
+    $("textarea").prop('disabled', true);
+
+    if(stage === "user_reply1") chatWindow.talk(convo, "robot1");
+    if(stage === "user_reply2") chatWindow.talk(convo, "robot2");
+    if(stage === "user_reply3") chatWindow.talk(convo, "robot3");
+    if(stage === "user_reply4") chatWindow.talk(convo, "robot4");
+    if(stage === "user_reply5") chatWindow.talk(convo, "robot5");
+    if(stage === "user_reply6") chatWindow.talk(convo, "robot6");
+    if(stage === "user_reply7") chatWindow.talk(convo, "robot7");
+    if(stage === "user_reply8") chatWindow.talk(convo, "robot8");
+    if(stage === "user_reply9") chatWindow.talk(convo, "robot9");
+    if(stage === "user_reply10") chatWindow.talk(convo, "robot10");
+    if(stage === "user_reply11") chatWindow.talk(convo, "robot11");
+
+}
+});
+
+window.onscroll = function() {myFunction()};
+
+var header = document.getElementById("myHeader");
+var sticky = header.offsetTop;
+
+function myFunction() {
+  if (window.pageYOffset > sticky) {
+    header.classList.add("sticky");
+  } else {
+    header.classList.remove("sticky");
+  }
+}
+
+
+</script>
+{% endblock %}
